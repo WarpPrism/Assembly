@@ -27,27 +27,28 @@ void selectsort(int arr[], int size) {
 	}
 }
 
-DISPLAY MACRO STRING                   
+;*****************************************************************************************************************************
+;DISPLAY A STRING
+DISPLAYS MACRO STRING                   
     MOV AH,09
     ;MOV DX,OFFSET STRING
     LEA DX,STRING
     INT 21H
 ENDM
-
+;DISPLAY A CHARACTER
 SHOWCHAR MACRO CHAR
     MOV AH,02
     MOV DL,CHAR
     INT 21H
 ENDM
-
+;******************************************************************************************************************************
 DATAS SEGMENT
     PROMPT DB "The sorted array is: ",'$'
     PROMPT1 DB "No same!",'$'
     CRLF   DB 0DH,0AH,'$'
-    A   DB 1,2,23,4,25,36,37,28,9,10,11,12,23,14,15,16,17,18,19,20
-    B   DB 1,2,3,4,5,6,7,8,9,10,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
+    A   DB 1,2,23,4,25,36,37,28,9,210,11,12,23,14,15,16,17,18,19,20
+    B   DB 1,2,3,4,5,6,7,8,9,210,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
     C   DB 30 DUP (0)
-    ;C   DB 10,9,8,7,6,5,4,3,2
     COUNT   DB (0)
     COUNT2  DB (0)
     ORDERED DB (0)
@@ -60,7 +61,7 @@ CODES SEGMENT
     ASSUME CS:CODES,DS:DATAS
     
 START:      
-            
+;INIT            
             MOV AX,DATAS
             MOV DS,AX
             ;JMP SORT_INIT
@@ -70,7 +71,8 @@ START:
             MOV DI,OFFSET C
             MOV CX,20
             MOV AH,30
-    
+;*****************************************************************************************************************************
+;MOV TO ARRAY C    
 COMP:       MOV AL,[SI]
             MOV DL,[BX]
             CMP AL,DL
@@ -81,7 +83,7 @@ COMP:       MOV AL,[SI]
             JZ  NOT_INB
             JNZ COMP
         
-                
+;NUMBER IN B                
 INB:        MOV [DI],AL
             INC COUNT
             INC SI
@@ -92,7 +94,7 @@ INB:        MOV [DI],AL
             JNZ COMP
             JZ  NOSAME
             ;JZ  SHOWC
-
+;NUMBER NOT IN B
 NOT_INB:    INC SI
             MOV BX,OFFSET B
             MOV AH,30
@@ -104,11 +106,12 @@ NOT_INB:    INC SI
 NOSAME:     CMP COUNT,0
             JZ PROMPT_
             JNZ SORT_INIT
-
-PROMPT_:    DISPLAY PROMPT1
-            DISPLAY CRLF
+;NO SAME MESSAGE
+PROMPT_:    DISPLAYS PROMPT1
+            DISPLAYS CRLF
             JMP OVER
-            
+ ;******************************************************************************************************************************
+ ;SORT PROCESS           
 SORT_INIT:  CALL CLEAR
             MOV ORDERED,0          
             MOV CL,COUNT
@@ -121,7 +124,7 @@ SORT_INIT:  CALL CLEAR
             MOV DL,C[BX]
             MOV MININDEX,BX
             MOV DI,MININDEX
-         
+;COMPARE         
 COMPMIN:    CMP DL,C[BX + 1]
             JB  NEXT
             MOV DL,C[BX + 1]
@@ -129,12 +132,12 @@ COMPMIN:    CMP DL,C[BX + 1]
             INC MININDEX
             MOV DI,MININDEX
             JMP NEXT
-            
+;INNER CYCLE           
 NEXT:       DEC AL
             JZ SWAP
             INC BX
             JMP COMPMIN
-            
+;SWAP            
 SWAP:       MOV DH,0
             MOV BH,0
             MOV BL,ORDERED
@@ -145,7 +148,7 @@ SWAP:       MOV DH,0
             MOV DH,TEMP
             MOV C[DI],DH
             JMP AGAIN
-            
+;OUTER CYCLE            
 AGAIN:      INC ORDERED
             MOV AL,COUNT
             SUB AL,ORDERED
@@ -159,38 +162,42 @@ AGAIN:      INC ORDERED
             DEC CL
             JNZ COMPMIN
             JZ SHOWC
-                                             
 
+;*******************************************************************************************************************************                                             
+;SHOW ARRAY C
 SHOWC:      
-            DISPLAY PROMPT
-            DISPLAY CRLF
-            DISPLAY CRLF
+            DISPLAYS PROMPT
+            DISPLAYS CRLF
+            DISPLAYS CRLF
             CALL CLEAR
             MOV CL,COUNT
             MOV COUNT2,CL
             MOV BX,0
             MOV INDEX,BX
 
-DISPLAY:    MOV AL,C[BX]
+DISPLAYX:   MOV AH,0 
+            MOV AL,C[BX]
             CALL SHOW
             SHOWCHAR ' '
             INC INDEX
             MOV BX,INDEX
             XOR AX,AX
             DEC COUNT2
-            JNZ DISPLAY
+            JNZ DISPLAYX
             JZ  OVER
-        
+;******************************************************************************************************************************
+;PROGRAM END        
 OVER:   MOV AH,4CH
         INT 21H
-        
+;SHOW NUMBER IN ASCII        
 SHOW:
         XOR CX,CX
         MOV BX,10
+;DIV AX BY BX=10 TO AX AND Remainder is in DX
 NX1:
         XOR DX,DX
         DIV BX
-        OR DX,0e30h
+        OR DX,0E30h
         INC CX
         PUSH DX
         CMP AX,0
@@ -199,7 +206,7 @@ NX2:    POP AX
         INT 10H
         LOOP NX2
         RET
-
+;CLEAR REGISTERS
 CLEAR:
         XOR AX,AX
         XOR BX,BX
